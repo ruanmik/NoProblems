@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, request, redirect, flash, session
 import psycopg2
+import re
 from datetime import datetime
 
 
@@ -161,6 +162,7 @@ def get_order_info(id):
         prob_id = cur.fetchone()[0]
 
         for tag in tags:
+            tag = re.sub(r"^\s+|\s+$", "", tag)
             cur.execute('''select t.id from "No_problem".tag as t
                     where t.name = %s ''', (tag, ))
             tag_id = cur.fetchone()
@@ -612,6 +614,7 @@ def show_rating_sub(id, sub_name):
 @app.route('/tag_search/<id>', methods=['POST'])
 def tag_search(id):
     tag = request.form['tag']
+    tag = re.sub(r"^\s+|\s+$", "", tag)
     cur = con.cursor()
     cur.execute(
     '''
@@ -809,7 +812,7 @@ def show_stat(id, stat):
         stat = 'p.solve_client_id'
         title = 'Статистика решенных задач'
     cur = con.cursor()
-    subjects = ['пупа и лупа',"Математика", "Английский язык", "Русский язык", "Литература", "Иностранный язык", "Информатика", "История", "Обществознание", "География", "Физика", "Химия", "Экология", "Биология", "Физическая культура", "Философия", "Социология", "Логистика", "Дизайн", "Программирование", "Право", "Политология"]
+    subjects = ["Математика", "Английский язык", "Русский язык", "Литература", "Иностранный язык", "Информатика", "История", "Обществознание", "География", "Физика", "Химия", "Экология", "Биология", "Физическая культура",'Тест', "Философия", "Социология", "Логистика", "Дизайн", "Программирование", "Право", "Политология"]
     data = {}
     all_ = 0
     for sub in subjects:
@@ -821,11 +824,9 @@ def show_stat(id, stat):
             WHERE ({stat} = %s) AND (s.name = %s)
         ''', (1, id, sub))
         data[sub] = cur.fetchone()[0]
-        if (sub == 'пупа и лупа'):
+        if (sub == 'Тест'):
             data[sub] = ''
     cur.close()
-    # print(data)
-    # data = {'Программирование' : '', 'пупа и лупа' : '', 'Литература': 4}
 
     return render_template('google.html', id = id, data=data, Title=title)
 
